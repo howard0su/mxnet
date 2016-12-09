@@ -8,8 +8,12 @@ from initializer import ScaleInitializer
 from metric import MultiBoxMetric
 from dataset.iterator import DetIter
 from dataset.pascal_voc import PascalVoc
+from dataset.tiger import tiger
 from dataset.concat_db import ConcatDB
 from config.config import cfg
+
+def load_tiger(image_set, devkit_path, shuffle = False):
+    return tiger(image_set, shuffle)
 
 def load_pascal(image_set, year, devkit_path, shuffle=False):
     """
@@ -164,6 +168,12 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
         imdb = load_pascal(image_set, year, devkit_path, cfg.TRAIN.INIT_SHUFFLE)
         if val_set and val_year:
             val_imdb = load_pascal(val_set, val_year, devkit_path, False)
+        else:
+            val_imdb = None
+    elif dataset == 'tiger':
+        imdb = load_tiger(image_set, devkit_path, cfg.TRAIN.INIT_SHUFFLE)
+        if val_set:
+            val_imdb = load_tiger(val_set, devkit_path, False)
         else:
             val_imdb = None
     else:
