@@ -5,9 +5,13 @@ import scipy.sparse
 import scipy.io as sio
 import random
 from imdb import Imdb
+import json
+
+WIDTH = 640
+HEIGHT = 360
 
 class tiger(Imdb):
-    def __init__(self, image_set,shuffle) :
+    def __init__(self, image_set, shuffle=False) :
         super(tiger, self).__init__('tiger_' + image_set)
         self.image_set = image_set
         self.classes = ('__background',
@@ -54,10 +58,10 @@ class tiger(Imdb):
                     cls = 4
                 else:
                     cls = entry[4]
-                x1 = entry[0] / 640
-                y1 = entry[1] / 360
-                x2 = entry[2] / 640
-                y2 = entry[3] / 360
+                x1 = entry[0] / WIDTH
+                y1 = entry[1] / HEIGHT 
+                x2 = entry[2] / WIDTH
+                y2 = entry[3] / HEIGHT
 
                 boxes.append([cls, x1, y1, x2, y2])
 
@@ -74,7 +78,14 @@ class tiger(Imdb):
                     os.path.splitext(os.path.basename(f))[0] for f in os.listdir(self._data_path) \
                     if os.path.isfile(os.path.join(self._data_path, f)) and os.path.splitext(f)[1] == self.image_ext]
         else :
-            image_set_file = os.path.join(self._data_path, 'label.idl')
+            if self.image_set == 'trainval':
+                labelfile = 'label.idl'
+            elif self.image_set == 'train':
+                labelfile = 'train.idl'
+            elif self.image_set == 'val':
+                labelfile = 'val.idl'
+
+            image_set_file = os.path.join(self._data_path, labelfile)
             assert os.path.exists(image_set_file), \
                     'Path does not exist: {}'.format(image_set_file)
 
@@ -83,7 +94,6 @@ class tiger(Imdb):
                 self._gt_roidb = [x for x in self._gt_roidb if x != None]
                 if shuffle:
                     random.shuffle(self._gt_roidb)
-            #if self.image_set == 'trainval' :
             image_index = [key["index"] for key in self._gt_roidb]
 	    # add padding
 	    max_objects = 29 
@@ -137,8 +147,31 @@ class tiger(Imdb):
         """
 	labels = self.labels[index, :, :]
         return labels
-if __name__ == '__main__':
-    from datasets.tiger import tiger
-    d = tiger('trainval')
-    res = d.roidb
-    from IPython import embed; embed()
+
+    def evaluate_detections(self, detections):
+        """
+        top level evaluations
+        Parameters:
+        ----------
+        detections: list
+            result list, each entry is a matrix of detections
+        Returns:
+        ----------
+            None
+        """
+        # make all these folders for results
+        result = {}
+        for img, dets in enumerate(detections):
+           l = [] 
+	   inds = np.where(dets[:, 1] >= 0.1)[0]
+	   for i in inds:
+	       score = round(float(dets[i, 1]),2)
+	       clsid = int(dets[i, 0])
+	       l.append([
+                   round(float(dets[i, 2] * WIDTH),2) + 1,
+                   round(float(dets[i, 3] * HEIGHT),2) + 1,
+		   round(float(dets[i, 4] * WIDTH),2) + 1,
+                   round(float(dets[i, 5] * HEIGHT),2) + 1,
+		       clsid, score])
+           result[self.image_set_index[img]+self.image_ext] = l
+        print json.dumps(result)
