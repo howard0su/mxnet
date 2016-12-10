@@ -94,20 +94,24 @@ def get_symbol_train(num_classes=20):
         stride=(1,1), act_type="relu", use_batchnorm=False)
     conv8_2, relu8_2 = conv_act_layer(relu8_1, "8_2", 512, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
-    conv9_1, relu9_1 = conv_act_layer(relu8_2, "9_1", 128, kernel=(1,1), pad=(0,0), \
+
+    conv9_1, relu9_1 = conv_act_layer(relu8_1, "9_1", 128, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
     conv9_2, relu9_2 = conv_act_layer(relu9_1, "9_2", 256, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
+
     conv10_1, relu10_1 = conv_act_layer(relu9_2, "10_1", 128, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
-    conv10_2, relu10_2 = conv_act_layer(relu10_1, "10_2", 256, kernel=(3,3), pad=(1,1), \
-        stride=(2,2), act_type="relu", use_batchnorm=False)
-    # global Pooling
-    pool10 = mx.symbol.Pooling(data=relu10_2, pool_type="avg",
-        global_pool=True, kernel=(1,1), name='pool10')
+    conv10_2, relu10_2 = conv_act_layer(relu10_1, "10_2", 256, kernel=(3,3), pad=(0,0), \
+        stride=(1,1), act_type="relu", use_batchnorm=False)
+
+    conv11_1, relu11_1 = conv_act_layer(relu10_2, "11_1", 128, kernel=(1,1), pad=(0,0), \
+        stride=(1,1), act_type="relu", use_batchnorm=False)
+    conv11_2, relu11_2 = conv_act_layer(relu11_1, "11_2", 256, kernel=(3,3), pad=(0,0), \
+        stride=(1,1), act_type="relu", use_batchnorm=False)
 
     # specific parameters for VGG16 network
-    from_layers = [relu4_3, relu7, relu8_2, relu9_2, relu10_2, pool10]
+    from_layers = [conv4_3, fc7, conv8_2, conv9_2, conv10_2, conv11_2]
     sizes = [[.1], [.2,.276], [.38, .461], [.56, .644], [.74, .825], [.92, 1.01]]
     ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
         [1,2,.5,3,1./3], [1,2,.5,3,1./3]]
@@ -174,3 +178,7 @@ def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
         name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
         variances=(0.1, 0.1, 0.2, 0.2))
     return out
+
+if __name__=='__main__':
+    model = get_symbol_train(5)
+    print (model)
