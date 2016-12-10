@@ -41,7 +41,7 @@ def parse_args():
                         default=100, type=int)
     parser.add_argument('--frequent', dest='frequent', help='frequency of logging',
                         default=20, type=int)
-    parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
+    parser.add_argument('--data-shape', dest='data_shape', type=str, default="300",
                         help='set image shape')
     parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
                         help='learning rate')
@@ -70,9 +70,17 @@ if __name__ == '__main__':
     args = parse_args()
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     ctx = mx.cpu() if not ctx else ctx
+    d = args.data_shape.split(',')
+    if len(d) == 1:
+        data_shape = int(d[0])
+    elif len(d) == 2:
+        data_shape = (int(d[0]), int(d[1]))
+    else:
+        data_shape = 300
+
     train_net(args.network, args.dataset, args.image_set, args.year,
               args.devkit_path, args.batch_size,
-              args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
+              data_shape, (args.mean_r, args.mean_g, args.mean_b),
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
