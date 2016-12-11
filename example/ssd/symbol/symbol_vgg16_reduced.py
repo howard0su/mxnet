@@ -95,7 +95,7 @@ def get_symbol_train(num_classes=20):
     conv8_2, relu8_2 = conv_act_layer(relu8_1, "8_2", 512, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
 
-    conv9_1, relu9_1 = conv_act_layer(relu8_1, "9_1", 128, kernel=(1,1), pad=(0,0), \
+    conv9_1, relu9_1 = conv_act_layer(relu8_2, "9_1", 128, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
     conv9_2, relu9_2 = conv_act_layer(relu9_1, "9_2", 256, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
