@@ -106,6 +106,44 @@ class DetIter(mx.io.DataIter):
         pad = self._current + self.batch_size - self._size
         return 0 if pad < 0 else pad
 
+    def applyDistort(self, img, t):
+        if np.random.uniform(0, 1) > 0.5:
+            brightness = np.random.uniform(-32, 32)
+            img = cv2.convertScaleAbs(img, None, 1, brightness)
+
+        if t and np.random.uniform(0, 1) > 0.5:
+            contract = np.random.uniform(0.5, 1.5)
+            img = cv2.convertScaleAbs(img, None, contract)
+
+        if np.random.uniform(0, 1) > 0.5:
+            saturation = np.random.uniform(0.5, 1.5)
+            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            channels = cv2.split(img2)
+            channels[1] = cv2.convertScaleAbs(channels[1], None, saturation)
+            img2 = cv2.merge(channels)
+            img = cv2.cvtColor(img2, cv2.COLOR_HSV2BGR)
+
+        if np.random.uniform(0, 1) > 0.5:
+            hue = np.random.uniform(-18, 18)
+            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            channels = cv2.split(img2)
+            channels[0] = cv2.convertScaleAbs(channels[0], None, 1, hue)
+            img2 = cv2.merge(channels)
+            img = cv2.cvtColor(img2, cv2.COLOR_HSV2BGR)
+
+        if not t and np.random.uniform(0, 1) > 0.5:
+            contract = np.random.uniform(0.5, 1.5)
+            img = cv2.convertScaleAbs(img, None, contract)
+
+        """
+        if np.random.uniform(0, 1) > 0.5:
+            channels = cv2.split(img)
+            random.shuffle(channels)
+            img = cv2.merge(channels)
+        """
+
+        return img
+
     def _get_batch(self):
         """
         Load data/label from dataset
@@ -186,5 +224,8 @@ class DetIter(mx.io.DataIter):
             interp_methods = [cv2.INTER_LINEAR]
         interp_method = interp_methods[int(np.random.uniform(0, 1) * len(interp_methods))]
         data = resize(data, self._data_shape, interp_method)
+
+        if self.is_train:
+            data = self.applyDistort(data.astype(np.uint8), np.random.uniform(0, 1) > 0.5)
         data = transform(data, self._mean_pixels)
         return data, label
