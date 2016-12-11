@@ -27,7 +27,7 @@ def parse_args():
                         default='0', type=str)
     parser.add_argument('--cpu', dest='cpu', help='use cpu to evaluate',
                         action='store_true')
-    parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
+    parser.add_argument('--data-shape', dest='data_shape', type=str, default="300",
                         help='set image shape')
     parser.add_argument('--mean-r', dest='mean_r', type=float, default=123,
                         help='red mean value')
@@ -48,8 +48,16 @@ if __name__ == '__main__':
         ctx = mx.cpu()
     else:
         ctx = [mx.gpu(int(i)) for i in args.gpu_id.split(',')]
+    d = args.data_shape.split(',')
+    if len(d) == 1:
+        data_shape = int(d[0])
+    elif len(d) == 2:
+        data_shape = (int(d[0]), int(d[1]))
+    else:
+        data_shape = 300
+
     evaluate_net(args.network, args.dataset, args.devkit_path,
-                 (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
+                 (args.mean_r, args.mean_g, args.mean_b), data_shape,
                  args.prefix, args.epoch, ctx, year=args.year,
                  sets=args.eval_set, batch_size=args.batch_size,
                  nms_thresh=args.nms_thresh, force_nms=args.force_nms)

@@ -17,7 +17,7 @@ class Detector(object):
         name prefix of trained model
     epoch : int
         load epoch of trained model
-    data_shape : int
+    data_shape : (int, int)
         input data resize shape
     mean_pixels : tuple of float
         (mean_r, mean_g, mean_b)
@@ -33,8 +33,8 @@ class Detector(object):
             self.ctx = mx.cpu()
         _, args, auxs = mx.model.load_checkpoint(model_prefix, epoch)
         self.mod = mx.mod.Module(symbol, context=ctx)
-        self.data_shape = data_shape
-        self.mod.bind(data_shapes=[('data', (batch_size, 3, data_shape, data_shape))])
+        self.mod.bind(data_shapes=[('data', (batch_size, 3, data_shape[1], data_shape[0]))], \
+                grad_req="null")
         self.mod.set_params(args, auxs)
         self.data_shape = data_shape
         self.mean_pixels = mean_pixels

@@ -54,13 +54,16 @@ def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape,
         imdb = tiger(sets, shuffle=False)
     else:
         raise NotImplementedError("No support for dataset: " + dataset)
+        raise NotImplementedError, "No support for dataset: " + dataset
+    if isinstance(data_shape, int):
+        data_shape = (data_shape, data_shape)
     data_iter = DetIter(imdb, batch_size, data_shape, mean_pixels,
         rand_samplers=[], rand_mirror=False, is_train=False, shuffle=False)
     sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
     net = importlib.import_module("symbol_" + net) \
         .get_symbol(imdb.num_classes, nms_thresh, force_nms)
-    model_prefix += "_" + str(data_shape)
+    model_prefix += "_" + str(data_shape[0])
     detector = Detector(net, model_prefix, epoch, data_shape, mean_pixels, batch_size, ctx)
     logger.info("Start evaluation with {} images, be patient...".format(imdb.num_images))
-    detections = detector.detect(data_iter)
+    detections = detector.detect(data_iter, True)
     imdb.evaluate_detections(detections)

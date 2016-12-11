@@ -35,9 +35,11 @@ def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx,
         force suppress different categories
     """
     sys.path.append(os.path.join(os.getcwd(), 'symbol'))
+    if isinstance(data_shape, int):
+        data_shape = (data_shape, data_shape)
     net = importlib.import_module("symbol_" + net) \
         .get_symbol(len(CLASSES), nms_thresh, force_nms)
-    detector = Detector(net, prefix + "_" + str(data_shape), epoch, \
+    detector = Detector(net, prefix + "_" + str(data_shape[0]), epoch, \
         data_shape, mean_pixels, ctx=ctx)
     return detector
 
@@ -59,7 +61,7 @@ def parse_args():
                         action='store_true', default=False)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=0,
                         help='GPU device id to detect with')
-    parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
+    parser.add_argument('--data-shape', dest='data_shape', type=str, default="300",
                         help='set image shape')
     parser.add_argument('--mean-r', dest='mean_r', type=float, default=123,
                         help='red mean value')
@@ -84,13 +86,20 @@ if __name__ == '__main__':
         ctx = mx.cpu()
     else:
         ctx = mx.gpu(args.gpu_id)
+    d = args.data_shape.split(',')
+    if len(d) == 1:
+        data_shape = int(d[0])
+    elif len(d) == 2:
+        data_shape = (int(d[0]), int(d[1]))
+    else:
+        data_shape = 300
 
     # parse image list
     image_list = [i.strip() for i in args.images.split(',')]
     assert len(image_list) > 0, "No valid image specified to detect"
 
     detector = get_detector(args.network, args.prefix, args.epoch,
-                            args.data_shape,
+                            data_shape,
                             (args.mean_r, args.mean_g, args.mean_b),
                             ctx, args.nms_thresh, args.force_nms)
     # run detection
