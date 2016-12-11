@@ -111,7 +111,7 @@ def get_symbol_train(num_classes=20):
         stride=(1,1), act_type="relu", use_batchnorm=False)
 
     # specific parameters for VGG16 network
-    from_layers = [conv4_3, fc7, conv8_2, conv9_2, conv10_2, conv11_2]
+    from_layers = [relu4_3, relu7, relu8_2, relu9_2, relu10_2, relu11_2]
     sizes = [[.1], [.2,.276], [.38, .461], [.56, .644], [.74, .825], [.92, 1.01]]
     ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
         [1,2,.5,3,1./3], [1,2,.5,3,1./3]]
