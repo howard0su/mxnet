@@ -228,17 +228,17 @@ template<>
 MSHADOW_XINLINE float cephes::psi_helper<float>(float s) {
   float z;
   const float A[] = {
-    -4.16666666666666666667E-3,
-    3.96825396825396825397E-3,
-    -8.33333333333333333333E-3,
-    8.33333333333333333333E-2
+    -4.16666666666666666667E-3f,
+    3.96825396825396825397E-3f,
+    -8.33333333333333333333E-3f,
+    8.33333333333333333333E-2f
   };
 
   if ( s < 1.0e8 ) {
-    z = 1.0/(s * s);
-    return z * cephes::polevl<float>(z, A, 3);
+    z = 1.0f/(s * s);
+    return z * cephes::polevl<float>(z, A, 3.f);
   } else {
-    return 0.0;
+    return 0.0f;
   }
 }
 }  // namespace special_functions
