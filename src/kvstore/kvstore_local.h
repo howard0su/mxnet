@@ -30,7 +30,14 @@ class KVStoreLocal : public KVStore {
     } else {
       comm_ = new CommCPU();
     }
-    pinned_ctx_ = (MXNET_USE_CUDA != 0) ? Context::CPUPinned(0) : Context::CPU();
+#if MXNET_USE_CUDA
+    int gpu_num;
+    int ret = cudaGetDeviceCount(&gpu_num);
+    pinned_ctx_ = (ret == 0 && gpu_num > 0) ?
+      Context::CPUPinned(0) : Context::CPU();
+#else
+    pinned_ctx_ = Context::CPU();
+#endif
   }
 
   virtual ~KVStoreLocal() {
